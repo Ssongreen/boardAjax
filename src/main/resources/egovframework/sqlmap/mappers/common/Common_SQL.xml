@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "Common">
+
+	<!-- 	코드 테이블 에서 셀렉트 박스 리스트 검색 -->
+<select id="selectCombo" parameterType="map" resultType="egovMap">
+		SELECT
+		  CODE,
+		  COM_KOR
+		FROM 
+			CODE_MASTER
+		WHERE
+			CATEGORY = #{category}
+		AND
+			USE_YN     ='Y'
+</select>
+	
+	
+<select id="checkUserIdExist" parameterType="map" resultType="int">
+   SELECT 
+      COALESCE(COUNT(*), 0)
+   FROM 
+      USER_TB
+   WHERE
+      USER_ID = LOWER(#{userId, jdbcType=VARCHAR})
+</select>
+
+	
+<!-- <insert id="insertUser" parameterType="map">
+    INSERT 
+    	INTO 
+    	USER_TB (USER_SEQ, USER_ID, PWD, USER_NAME, IDENTIFY, IDENTIFY_NUM,
+    	GENDER, USEREMAIL, ZIPCODE,ADDRESS ,ADDRESS_DETAIL, PHONENUM, REG_DT)
+    VALUES 
+    	(USER_SEQ.NEXTVAL, 
+    	#{userId, jdbcType=VARCHAR}, 
+    	#{pwd, jdbcType=VARCHAR}, 
+    	#{userName, jdbcType=VARCHAR},
+    	#{identify, jdbcType=INTEGER},
+    	#{identifyNum, jdbcType=INTEGER},
+    	#{gender, jdbcType=VARCHAR},
+    	#{userEmail, jdbcType=VARCHAR},
+    	#{zipCode, jdbcType=INTEGER},
+    	#{address, jdbcType=VARCHAR},
+    	#{addressDetail, jdbcType=VARCHAR},
+    	#{phoneNum, jdbcType=VARCHAR},
+    	
+    	SYSDATE)
+</insert> -->
+
+<insert id="insertUser" parameterType="map">
+    INSERT INTO USER_TB (USER_SEQ, USER_ID, PWD, USER_NAME, IDENTIFY, IDENTIFY_NUM,
+        GENDER, USEREMAIL, ZIPCODE, ADDRESS, ADDRESS_DETAIL, PHONENUM, REG_DT, AGE)
+    VALUES (USER_SEQ.NEXTVAL,
+        #{userId, jdbcType=VARCHAR},
+        #{pwd, jdbcType=VARCHAR},
+        #{userName, jdbcType=VARCHAR},
+        #{identify, jdbcType=VARCHAR}, 
+        #{identifyNum, jdbcType=INTEGER},
+        #{gender, jdbcType=VARCHAR},
+        #{userEmail, jdbcType=VARCHAR},
+        #{zipCode, jdbcType=INTEGER},
+        #{address, jdbcType=VARCHAR},
+        #{addressDetail, jdbcType=VARCHAR},
+        #{phoneNum, jdbcType=VARCHAR},
+        SYSDATE,
+        CASE
+            WHEN TO_NUMBER(SUBSTR(#{identify}, 1, 2)) BETWEEN 10 AND 99 THEN
+                TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER('19' || SUBSTR(#{identify}, 1, 2)) + 1
+            WHEN TO_NUMBER(SUBSTR(#{identify}, 1, 2)) BETWEEN 0 AND 23 THEN
+                TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER('20' || SUBSTR(#{identify}, 1, 2)) + 1
+        END
+    )
+</insert>
+
+
+
+
+</mapper>

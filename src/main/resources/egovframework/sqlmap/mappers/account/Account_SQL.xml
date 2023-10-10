@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace = "Account">
+
+	<!-- 	코드 테이블 에서 셀렉트 박스 리스트 검색 -->
+	<select id="selectCombo" parameterType="map" resultType="egovMap">
+		SELECT
+		  CODE,
+		  COM_KOR.
+		FROM 
+			CODE_MASTER
+		WHERE
+			CATEGORY = #{category, jdbcType=VARCHAR}
+		AND
+			USE_YN     ='Y'
+	</select>
+	
+	
+	
+<select id="checkUserIdExist" parameterType="map" resultType="int">
+   SELECT 
+      COALESCE(COUNT(*), 0)
+   FROM 
+      USER_TB
+   WHERE
+      USER_ID = LOWER(#{userId, jdbcType=VARCHAR})
+      
+</select>
+
+	
+
+<insert id="accountInsert" parameterType="map" >
+    
+    INSERT INTO 
+    	ACCOUNT_TB
+    (ACCOUNT_SEQ, 
+    PROFIT_COST, 
+    BIG_GROUP, 
+    MIDDLE_GROUP, 
+    SMALL_GROUP, 
+    DETAIL_GROUP, 
+    COMMENTS, 
+    TRANSACTION_MONEY, 
+    TRANSACTION_DATE, 
+    WRITER, REG_DATE)
+    
+    VALUES
+    
+    (ACCOUNT_SEQ.NEXTVAL,
+     #{profitCost, jdbcType=VARCHAR},
+     #{bigGroup, jdbcType=VARCHAR},
+     #{middleGroup, jdbcType=VARCHAR},
+     #{smallGroup, jdbcType=VARCHAR},
+     #{detailGroup, jdbcType=VARCHAR},
+     #{comment, jdbcType=VARCHAR},
+     #{transactionMoney, jdbcType=INTEGER},
+     #{transactionDate, jdbcType=VARCHAR},
+     #{userName, jdbcType=VARCHAR},
+     SYSDATE)
+     <selectKey order="AFTER" keyProperty="accountSeq" resultType="int">
+     	SELECT  ACCOUNT_SEQ.CURRVAL FROM  DUAL
+     </selectKey>
+</insert>
+
+
+
+<select id="getAccountDataBySeq" parameterType="map" resultType="egovMap">
+    SELECT *
+    FROM ACCOUNT_TB
+    WHERE ACCOUNT_SEQ = #{accountSeq, jdbcType=INTEGER}
+</select>
+
+<update id="accountUpdate" parameterType="map">
+    UPDATE 
+    	ACCOUNT_TB
+    SET
+        PROFIT_COST = #{profitCost, jdbcType=VARCHAR},
+        BIG_GROUP = #{bigGroup, jdbcType=VARCHAR},
+        MIDDLE_GROUP = #{middleGroup, jdbcType=VARCHAR},
+        SMALL_GROUP = #{smallGroup, jdbcType=VARCHAR},
+        DETAIL_GROUP = #{detailGroup, jdbcType=VARCHAR},
+        COMMENTS = #{comment, jdbcType=VARCHAR},
+        TRANSACTION_MONEY = 
+        CASE 
+            WHEN #{transactionMoney, jdbcType=INTEGER} IS NULL OR #{transactionMoney, jdbcType=INTEGER} = 0 THEN TRANSACTION_MONEY
+            ELSE #{transactionMoney, jdbcType=INTEGER}
+        END,
+        TRANSACTION_DATE = TO_DATE(#{transactionDate, jdbcType=VARCHAR}, 'YYYY-MM-DD hh24miss')
+        
+    WHERE
+        ACCOUNT_SEQ = #{accountSeq, jdbcType=INTEGER}
+        
+</update>
+
+
+<select id="selectCategory" parameterType="map" resultType="egovMap">
+SELECT
+    A.ACCOUNT_SEQ,
+    A.PROFIT_COST,
+    B.COM_KOR AS PROFIT_COST_CODE_KOR,
+    A.BIG_GROUP,
+    C.COM_KOR AS BIG_GROUP_CODE_KOR,
+    A.MIDDLE_GROUP,
+    D.COM_KOR AS MIDDLE_GROUP_CODE_KOR,
+    A.SMALL_GROUP,
+    E.COM_KOR AS SMALL_GROUP_CODE_KOR,
+    A.DETAIL_GROUP,
+    F.COM_KOR AS DETAIL_GROUP_CODE_KOR,
+    A.COMMENTS,
+    A.TRANSACTION_MONEY,
+    A.TRANSACTION_DATE,
+    A.WRITER,
+    A.REG_DATE
+FROM
+    ACCOUNT_TB A
+LEFT JOIN
+    CODE_MASTER B ON A.PROFIT_COST = B.CODE
+LEFT JOIN
+    CODE_MASTER C ON A.BIG_GROUP = C.CODE
+LEFT JOIN
+    CODE_MASTER D ON A.MIDDLE_GROUP = D.CODE
+LEFT JOIN
+    CODE_MASTER E ON A.SMALL_GROUP = E.CODE
+LEFT JOIN
+    CODE_MASTER F ON A.DETAIL_GROUP = F.CODE
+WHERE
+    A.ACCOUNT_SEQ = #{accountSeq}
+
+
+</select>
+<select id="serchCount" parameterType="map" resultType="int">
+ SELECT
+    count(*)
+FROM
+    ACCOUNT_TB 
+WHERE 
+    WRITER = #{userName, jdbcType=VARCHAR}
+</select>
+
+<select id="serchAll" parameterType="map" resultType="egovMap">
+
+SELECT * 
+FROM (
+    SELECT 
+        ROWNUM rn,
+        A.ACCOUNT_SEQ,
+        A.PROFIT_COST,
+        B.COM_KOR AS PROFIT_COST_CODE_KOR,
+        A.BIG_GROUP,
+        C.COM_KOR AS BIG_GROUP_CODE_KOR,
+        A.MIDDLE_GROUP,
+        D.COM_KOR AS MIDDLE_GROUP_CODE_KOR,
+        A.SMALL_GROUP,
+        E.COM_KOR AS SMALL_GROUP_CODE_KOR,
+        A.DETAIL_GROUP,
+        F.COM_KOR AS DETAIL_GROUP_CODE_KOR,
+        A.COMMENTS,
+        A.TRANSACTION_MONEY,
+        A.TRANSACTION_DATE,
+        A.WRITER,
+        A.REG_DATE
+    FROM ACCOUNT_TB A
+    LEFT JOIN CODE_MASTER B ON A.PROFIT_COST = B.CODE
+    LEFT JOIN CODE_MASTER C ON A.BIG_GROUP = C.CODE
+    LEFT JOIN CODE_MASTER D ON A.MIDDLE_GROUP = D.CODE
+    LEFT JOIN CODE_MASTER E ON A.SMALL_GROUP = E.CODE
+    LEFT JOIN CODE_MASTER F ON A.DETAIL_GROUP = F.CODE
+    WHERE WRITER = #{userName, jdbcType=VARCHAR}
+    ORDER BY A.REG_DATE DESC
+)
+<![CDATA[
+WHERE 
+	rn <= #{lastPage} 
+AND 
+	rn > #{startPage}
+]]>
+</select>
+
+
+</mapper>

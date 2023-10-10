@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Login">
+
+	 <resultMap id="userVO" type="com.lime.user.vo.UserVO">
+		<result property="userSeq" column="User_seq"/>
+		<result property="userId" column="user_id"/>
+		<result property="pwd" column="pwd"/>
+		<result property="userName" column="user_name"/>
+		<result property="regDt" column="reg_dt"/>
+	</resultMap>  
+
+<select id="checkLogin" parameterType="map" resultType="int">
+   SELECT 
+      COALESCE(COUNT(*), 0) 
+   FROM 
+      USER_TB 
+   WHERE
+      USER_ID = #{userId, jdbcType=VARCHAR}
+   AND
+   	  PWD = #{pwd, jdbcType=VARCHAR}
+</select> 
+<select id="findName" parameterType="map" resultType="String">
+   SELECT 
+      USER_NAME
+   FROM 
+      USER_TB 
+   WHERE
+      USER_ID = #{userId, jdbcType=VARCHAR}
+</select> 
+
+<select id="findIdAndPwd" parameterType="map" resultType="egovMap">
+   SELECT 
+      USER_ID, PWD
+   FROM 
+      USER_TB 
+   WHERE
+      USER_ID = #{userId, jdbcType=VARCHAR} 
+</select> 
+
+<select id="kakaoLogin" parameterType="map" resultType="int">
+   SELECT 
+      COALESCE(COUNT(*), 0) 
+   FROM 
+      USER_KA 
+   WHERE
+      KAKAO_ID = #{id, jdbcType=VARCHAR}
+</select> 
+
+<insert id="joinKakao" parameterType="map" >
+    INSERT 
+    	INTO 
+    	USER_KA (KAKAO_ID, USER_NAME)
+    VALUES 
+    	(
+    	#{id, jdbcType=VARCHAR}, 
+    	#{userName, jdbcType=VARCHAR}
+    	)
+</insert>
+<!--
+<update id="updateToken" parameterType="map">
+    UPDATE 
+    	USER_KA
+    SET
+        ACCESS_TOKEN = #{accessToken, jdbcType=VARCHAR}
+        
+    WHERE
+        ACCOUNT_SEQ = #{refreshToken, jdbcType=VARCHAR}
+        
+</update> -->
+
+</mapper>
